@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Gjusev/locale-invoice-check/main/src/locale_invoice_check/schemas/result.v1.json",
+  "title": "locale-invoice-check result artifact (schema_version 1.0)",
+  "description": "Validates the result.json emitted by locale-check run/demo. Changes within schema_version 1.0 are additive only. review-queue.json uses the wrapper {schema_version, review_queue} whose items validate against #/properties/review_queue/items.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "package_version",
+    "count",
+    "seed",
+    "extractor",
+    "fields",
+    "locales",
+    "thresholds",
+    "metrics",
+    "gates",
+    "passed",
+    "invoices",
+    "review_queue"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "package_version": {
+      "type": "string"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "renderer": {
+      "type": "string"
+    },
+    "extractor": {
+      "type": "string"
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "locales": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "required": [
+        "min_field_accuracy",
+        "max_locale_delta",
+        "max_money_error_rate",
+        "max_date_swap_rate",
+        "min_confidence"
+      ],
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "field_accuracy",
+        "locale_accuracy",
+        "locale_delta",
+        "money_error_rate",
+        "date_swap_rate"
+      ],
+      "properties": {
+        "field_accuracy": {
+          "$ref": "#/$defs/localeFieldMap"
+        },
+        "locale_accuracy": {
+          "$ref": "#/$defs/localeMap"
+        },
+        "locale_delta": {
+          "type": "number"
+        },
+        "money_error_rate": {
+          "$ref": "#/$defs/localeMap"
+        },
+        "date_swap_rate": {
+          "$ref": "#/$defs/localeMap"
+        }
+      },
+      "additionalProperties": false
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "measured",
+          "threshold",
+          "direction",
+          "passed"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "measured": {
+            "type": "number"
+          },
+          "threshold": {
+            "type": "number"
+          },
+          "direction": {
+            "enum": [
+              "min",
+              "max"
+            ]
+          },
+          "passed": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "passed": {
+      "type": "boolean"
+    },
+    "invoices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "locales"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "locales": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "required": [
+                "image",
+                "fields"
+              ],
+              "properties": {
+                "image": {
+                  "type": "string"
+                },
+                "fields": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "required": [
+                      "expected",
+                      "got",
+                      "normalized",
+                      "passed",
+                      "reasons"
+                    ],
+                    "properties": {
+                      "expected": {
+                        "type": "string"
+                      },
+                      "got": {
+                        "type": [
+                          "string",
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "normalized": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "passed": {
+                        "type": "boolean"
+                      },
+                      "confidence": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "reasons": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "review_queue": {
+      "type": "array",
+      "$comment": "Every failed or low-confidence field lands here with expected/got/reasons.",
+      "items": {
+        "type": "object",
+        "required": [
+          "invoice_id",
+          "locale",
+          "field",
+          "expected",
+          "got",
+          "passed",
+          "reasons"
+        ],
+        "properties": {
+          "invoice_id": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "expected": {
+            "type": "string"
+          },
+          "got": {
+            "type": [
+              "string",
+              "number",
+              "null"
+            ]
+          },
+          "normalized": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "confidence": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "localeMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "localeFieldMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

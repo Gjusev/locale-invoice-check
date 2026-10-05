@@ -1,0 +1,50 @@
+[project]
+name = "locale-invoice-check"
+version = "0.1.0"
+description = "Matched-pair EN/DE/ES invoice extraction regression tests with deterministic CI gates."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{name = "Gjusev"}]
+dependencies = ["Pillow>=10.1"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Quality Assurance",
+  "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+llm = ["httpx>=0.27,<1"]
+
+[project.scripts]
+locale-check = "locale_invoice_check.cli:main"
+
+[project.urls]
+Repository = "https://github.com/Gjusev/locale-invoice-check"
+Issues = "https://github.com/Gjusev/locale-invoice-check/issues"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.11", "httpx>=0.27,<1", "jsonschema>=4.20"]
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/locale_invoice_check"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["live: opt-in network test; blocked in CI"]

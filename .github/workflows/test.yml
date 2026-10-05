@@ -1,0 +1,53 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync
+      - run: uv run ruff check src tests
+      # Fully offline: no live network tests exist; markers kept for future opt-in.
+      - run: uv run pytest -q -m "not live"
+      # The strict demo exits 1 by design (seeded regex parser bug on DE/ES).
+      # CI asserts the relaxed demo terminates with 0.
+      - run: uv run locale-check demo --count 8 --seed 42 --min-field-accuracy 0 --max-locale-delta 1 --max-money-error-rate 1
+
+  wheel-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - run: uv build
+      - name: Install the built wheel into a clean venv and smoke it
+        run: |
+          uv venv .wheelcheck
+          VIRTUAL_ENV=.wheelcheck uv pip install dist/*.whl
+          .wheelcheck/bin/locale-check generate fixtures --count 3 --seed 42
+          .wheelcheck/bin/locale-check run fixtures --min-field-accuracy 0 --max-locale-delta 1 --max-money-error-rate 1 --output result.json --html report.html --review-output review-queue.json
+          .wheelcheck/bin/python - <<'EOF'
+          import json
+          import locale_invoice_check
+          from pathlib import Path
+
+          assert "site-packages" in locale_invoice_check.__file__, locale_invoice_check.__file__
+          result = json.loads(Path("result.json").read_text(encoding="utf-8"))
+          assert result["schema_version"] == "1.0"
+          assert result["passed"]
+          schema = locale_invoice_check.load_result_schema()
+          assert schema["properties"]["schema_version"]["const"] == "1.0"
+          print("wheel smoke ok:", locale_invoice_check.__version__)
+          EOF

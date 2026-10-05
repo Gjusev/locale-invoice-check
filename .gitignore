@@ -1,0 +1,27 @@
+# Environments
+.venv/
+venv/
+.wheelcheck/
+
+# Build and caches
+__pycache__/
+*.pyc
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Generated artifacts (regenerate with locale-check generate / demo)
+fixtures/
+result.json
+result.json.bak
+report.html
+review-queue.json
+
+# Credentials and secrets — never commit
+.env
+.env.*
+*.key
+*.pem
+kaggle.json
