@@ -50,8 +50,11 @@ locale-check demo --min-field-accuracy 0 --max-locale-delta 1 --max-money-error-
 These permissive thresholds are for the demo only. They do not fix the extractor.
 After installation, both commands run entirely offline.
 
-[Watch the demo video](https://github.com/Gjusev/locale-invoice-check/releases/download/v0.1.1/brag.mp4)
-or [reproduce it on Kaggle](https://www.kaggle.com/code/gjusev/locale-invoice-check-demo).
+<a href="https://github.com/Gjusev/locale-invoice-check/releases/download/v0.1.1/brag.mp4">
+  <img src="https://github.com/Gjusev/locale-invoice-check/releases/download/v0.1.1/brag.gif" alt="Demo: EN invoices parse perfectly while the seeded regex bug trips DE and ES money separators; the strict gate exits 1" width="720">
+</a>
+
+Or [reproduce it on Kaggle](https://www.kaggle.com/code/gjusev/locale-invoice-check-demo).
 
 To retain and reuse the corpus separately from evaluation:
 
