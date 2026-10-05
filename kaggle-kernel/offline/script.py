@@ -20,9 +20,9 @@ from pathlib import Path
 WORK = Path("/kaggle/working")
 WORK.mkdir(parents=True, exist_ok=True)
 
-print("Installing locale-invoice-check==0.1.1 from PyPI ...")
+print("Installing locale-invoice-check==0.1.2 from PyPI ...")
 subprocess.run(
-    [sys.executable, "-m", "pip", "install", "-q", "locale-invoice-check==0.1.1"],
+    [sys.executable, "-m", "pip", "install", "-q", "locale-invoice-check==0.1.2"],
     check=True,
 )
 

@@ -1,0 +1,24 @@
+[{"stream_name":"stdout","time":0.931729866,"data":"Installing locale-invoice-check==0.1.1 from PyPI ...\n"}
+,{"stream_name":"stdout","time":7.595180975,"data":"Running: /usr/bin/python3 -m locale_invoice_check demo --count 30 --seed 42 --min-field-accuracy 0 --max-locale-delta 1 --max-money-error-rate 1 --output /kaggle/working/result.json --html /kaggle/working/report.html --review-output /kaggle/working/review-queue.json\n"}
+,{"stream_name":"stdout","time":12.228110325,"data":"invoices=30 extractor=RegexBaselineExtractor\n"}
+,{"stream_name":"stdout","time":12.228142948,"data":"EN: accuracy=100.00% money_error_rate=0.00%\n"}
+,{"stream_name":"stdout","time":12.228146764,"data":"DE: accuracy=40.00% money_error_rate=100.00%\n"}
+,{"stream_name":"stdout","time":12.228149597,"data":"ES: accuracy=40.00% money_error_rate=100.00%\n"}
+,{"stream_name":"stdout","time":12.228152234,"data":"locale_delta=-60.00%\n"}
+,{"stream_name":"stdout","time":12.228154813,"data":"review_fields=180 gates=PASS\n"}
+,{"stream_name":"stdout","time":12.228157504,"data":"\n"}
+,{"stream_name":"stdout","time":12.234162805,"data":"=== locale-invoice-check offline demo summary ===\n"}
+,{"stream_name":"stdout","time":12.23419761,"data":"extractor: RegexBaselineExtractor\n"}
+,{"stream_name":"stdout","time":12.234203056,"data":"EN: locale_accuracy=100.00% money_error_rate=0.00%\n"}
+,{"stream_name":"stdout","time":12.234206096,"data":"DE: locale_accuracy=40.00% money_error_rate=100.00%\n"}
+,{"stream_name":"stdout","time":12.234208594,"data":"ES: locale_accuracy=40.00% money_error_rate=100.00%\n"}
+,{"stream_name":"stdout","time":12.234211287,"data":"locale_delta: -60.00%\n"}
+,{"stream_name":"stdout","time":12.234213819,"data":"gates: PASS\n"}
+,{"stream_name":"stdout","time":12.234216308,"data":"Artifacts written to /kaggle/working: result.json, report.html, review-queue.json\n"}
+,{"stream_name":"stderr","time":14.893416254,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":14.893456655,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":15.294135661,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":15.294161730999999,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":16.415463192,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":17.751734023,"data":"[NbConvertApp] Writing 282099 bytes to __results__.html\n"}
+]

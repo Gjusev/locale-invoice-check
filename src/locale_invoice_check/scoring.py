@@ -8,6 +8,7 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
+from ._version import __version__
 from .corpus import FIELDS, LOCALES, load_corpus
 from .extractors import Extractor
 
@@ -142,7 +143,7 @@ def evaluate_corpus(directory: str | Path, extractor: Extractor, *,
               "passed": measured + 1e-12 >= threshold if direction == "min"
               else measured <= threshold + 1e-12}
                  for name, measured, threshold, direction in checks]
-    return {"schema_version": "1.0", "package_version": "0.1.0", "count": count,
+    return {"schema_version": "1.0", "package_version": __version__, "count": count,
             "seed": manifest["seed"], "renderer": manifest["renderer"],
             "extractor": type(extractor).__name__, "fields": list(FIELDS), "locales": list(LOCALES),
             "thresholds": thresholds, "metrics": metrics, "gates": gates,

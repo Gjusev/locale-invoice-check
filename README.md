@@ -192,7 +192,7 @@ your PATH.
 
 ## Reproduce in Kaggle
 
-> The kernel installs `locale-invoice-check==0.1.1` from PyPI, so **this
+> The kernel installs `locale-invoice-check==0.1.2` from PyPI, so **this
 > requires the package to be published on PyPI first**.
 
 `kaggle-kernel/offline/script.py` plus `kaggle-kernel/kernel-metadata.json`

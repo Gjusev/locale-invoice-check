@@ -137,3 +137,12 @@ def test_extractors_returning_non_dict_raises(corpus):
 
     with pytest.raises(ValueError, match="JSON object"):
         _evaluate(corpus, Junk())
+
+
+def test_result_package_version_matches_installed_package(corpus):
+    # Regression: package_version was hardcoded to 0.1.0 and survived the
+    # 0.1.1 release, mislabeling result.json provenance.
+    import locale_invoice_check
+
+    result = _evaluate(corpus, CorrectExtractor(), min_field_accuracy=1.0)
+    assert result["package_version"] == locale_invoice_check.__version__
