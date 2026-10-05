@@ -1,44 +1,64 @@
-# locale-invoice-check
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Gjusev/locale-invoice-check/main/docs/assets/logo.png" width="100" height="100" alt="locale-invoice-check logo">
+</p>
+
+<h1 align="center">locale-invoice-check</h1>
+
+<p align="center"><strong>Same invoice. Three locales. Measure the difference.</strong></p>
 
 [![PyPI](https://img.shields.io/pypi/v/locale-invoice-check)](https://pypi.org/project/locale-invoice-check/)
 [![Python](https://img.shields.io/pypi/pyversions/locale-invoice-check)](https://pypi.org/project/locale-invoice-check/)
 [![CI](https://github.com/Gjusev/locale-invoice-check/actions/workflows/test.yml/badge.svg)](https://github.com/Gjusev/locale-invoice-check/actions/workflows/test.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](https://github.com/Gjusev/locale-invoice-check/blob/main/LICENSE)
 
-A regression harness for invoice extraction. It renders the same synthetic
-invoices as PNG triplets in English, German, and Spanish, and changes only what
-locale conventions change: labels, numeric separators, date format, and how the
-euro sign sits next to the number. When accuracy drops between locales, locale
-handling is the only possible cause.
+[Quick start](#quick-start-no-credentials) · [Metrics](#what-it-measures) ·
+[Python API](#python-api) · [Run on Kaggle](https://www.kaggle.com/code/gjusev/locale-invoice-check-demo)
+
+An invoice parser can read `1,234.56` correctly and misread `1.234,56`.
+This Python CLI makes that regression reproducible: render the **same synthetic
+invoice data as English, German, and Spanish PNGs**, run your extractor, and
+compare field accuracy with deterministic CI gates.
+
+Matched triplets vary labels, numeric separators, date formats, and currency
+placement while keeping the underlying business data and layout controlled.
+Live-provider nondeterminism can still affect results; a delta is a signal to
+investigate, not proof of its cause.
+
+**Offline demo · No API key · No LLM judge · Standalone HTML · Python 3.10+**
 
 Fields in v0.1 (exact set): `invoice_number`, `invoice_date`, `net_amount`,
 `tax_amount`, `total_amount`.
-
-## Demo video
-
-https://github.com/Gjusev/locale-invoice-check/releases/download/v0.1.1/brag.mp4
-
-## Why
-
-OpenAI released GPT-6.1 Sol on September 29, 2026 with document understanding as
-a headline capability ([announcement](https://openai.com/index/introducing-gpt-6-1-sol/)).
-Whether that survives a German decimal comma is what this harness measures.
-
-Nothing here shows a defect in that or any model. The harness gives you
-controlled pairs and hard gates so you can measure your own extractors.
 
 ## Quick start (no credentials)
 
 ```bash
 pip install locale-invoice-check
+locale-check demo
+```
 
+**Exit 1 is expected.** The bundled baseline deliberately misreads DE/ES money
+separators. Open `report.html` to see wrong amounts in red, with expected and
+actual values. Every failed field also appears in `review-queue.json`.
+The baseline reads PNG text metadata; it is an OCR surrogate, not an OCR engine.
+
+To exercise the passing exit path with the same seeded failures:
+
+```bash
+locale-check demo --min-field-accuracy 0 --max-locale-delta 1 --max-money-error-rate 1
+```
+
+These permissive thresholds are for the demo only. They do not fix the extractor.
+After installation, both commands run entirely offline.
+
+[Watch the demo video](https://github.com/Gjusev/locale-invoice-check/releases/download/v0.1.1/brag.mp4)
+or [reproduce it on Kaggle](https://www.kaggle.com/code/gjusev/locale-invoice-check-demo).
+
+To retain and reuse the corpus separately from evaluation:
+
+```bash
 locale-check generate fixtures --count 30 --seed 42
 locale-check run fixtures --extractor regex --json --output result.json
-locale-check demo
-
-# strict demo: exits 1 (the bundled baseline intentionally fails DE/ES money)
-# relaxed demo: exits 0
-locale-check demo --min-field-accuracy 0 --max-locale-delta 1 --max-money-error-rate 1
+```
 
 ## Extractors
 
@@ -82,25 +102,30 @@ messages never include response bodies or credentials.
 
 ```bash
 pip install "locale-invoice-check[llm]"
-export VISION_API_KEY=...      # required
-export VISION_MODEL=...        # required
+export VISION_API_KEY="your-api-key"      # required
+export VISION_MODEL="your-vision-model"  # required
 export VISION_BASE_URL=https://api.openai.com/v1   # optional, this is the default
 locale-check run fixtures --extractor llm
 ```
 
-Requests and errors are tested offline via `httpx.MockTransport`. No live network
-test ships with the package.
+In PowerShell, use `$env:VISION_API_KEY = "..."` and
+`$env:VISION_MODEL = "..."` instead of `export`. Choose a vision endpoint/model
+compatible with the adapter's request settings. Requests and errors are tested
+offline via `httpx.MockTransport`; the demo does not establish live-model performance.
 
-## Metrics (deterministic, no LLM judge)
+## What it measures
 
 With `N` = number of invoices and five fields:
 
-- `field_accuracy[locale][field]` = correct fields / N (15 metrics, 5 fields x 3 locales)
-- `locale_accuracy[locale]` = correct fields / (5·N)
-- `locale_delta` = min(locale_accuracy) − locale_accuracy[EN]. Signed: a
-  12-point drop is `-0.12`
-- `money_error_rate[locale]` = invoices with at least one wrong amount / N
-- `date_swap_rate[locale]` = invoices with an observable day/month inversion / N
+| Metric | Definition | What it tells you |
+|---|---|---|
+| `field_accuracy[locale][field]` | Correct values / N | Which of the 15 field/locale combinations regressed |
+| `locale_accuracy[locale]` | Correct values / (5 × N) | Overall extraction accuracy in each locale |
+| `locale_delta` | Worst locale accuracy − EN accuracy | Signed drop; 12 percentage points is `-0.12` |
+| `money_error_rate[locale]` | Invoices with any wrong amount / N | How often money fields need attention |
+| `date_swap_rate[locale]` | Observable day/month inversions / N | How often an ambiguous date was inverted |
+
+All scoring is deterministic; no LLM judge is involved.
 
 ### Date swap observability
 
@@ -166,15 +191,16 @@ failure.
 ## Python API
 
 ```python
-from locale_invoice_check import (FIELDS, LOCALES, LLMExtractor,
-                                  RegexBaselineExtractor, evaluate_corpus,
-                                  generate_corpus, load_corpus)
+from locale_invoice_check import (
+    RegexBaselineExtractor,
+    evaluate_corpus,
+    generate_corpus,
+)
 
 generate_corpus("fixtures", count=30, seed=42)          # 30 x EN/DE/ES PNGs
-_, manifest = load_corpus("fixtures")                    # validated, hash-checked
 result = evaluate_corpus("fixtures", RegexBaselineExtractor())
-result["passed"]            # bool
-result["metrics"]["field_accuracy"]["DE"]["net_amount"]
+print(result["metrics"]["locale_delta"])
+print(result["passed"])
 ```
 
 `python -m locale_invoice_check` works wherever the console script is not on
@@ -184,16 +210,16 @@ your PATH.
 
 - Generation is seeded (`--seed`). The manifest records seed, renderer
   configuration (Pillow version), relative image paths, and SHA-256 hashes.
-  Loading a corpus verifies every hash, so a corpus and its results are
-  redistributable and bit-reproducible.
+  Loading a corpus verifies every hash. Keep the renderer environment fixed
+  when you need byte-identical regeneration; seeded values alone do not pin Pillow.
 - Results contain no timestamps or absolute paths. Runs are deterministic offline.
 - The corpus is entirely synthetic: no real invoices, no personal data. It is
   Apache-2.0 licensed with the code.
 
 ## Reproduce in Kaggle
 
-> The kernel installs `locale-invoice-check==0.1.2` from PyPI, so **this
-> requires the package to be published on PyPI first**.
+[Open the public CPU kernel](https://www.kaggle.com/code/gjusev/locale-invoice-check-demo).
+It installs the published `locale-invoice-check==0.1.2` from PyPI.
 
 `kaggle-kernel/offline/script.py` plus `kaggle-kernel/kernel-metadata.json`
 define a public CPU kernel (`enable_gpu: false`, `enable_internet: true`;
@@ -205,23 +231,35 @@ prints a summary, and writes `result.json`, `report.html`, and
 Authenticate with a Kaggle API token (never commit it):
 
 ```bash
-export KAGGLE_API_TOKEN=<your-token>   # official OAuth token variable
+export KAGGLE_API_TOKEN="your-token"
 kaggle kernels push -p kaggle-kernel
 kaggle kernels status gjusev/locale-invoice-check-demo
 kaggle kernels output gjusev/locale-invoice-check-demo -p ./kernel-output
 ```
 
-## Related benchmarks (by name, not instead of)
+PowerShell: `$env:KAGGLE_API_TOKEN = "your-token"`. To publish a fork, update
+the kernel owner/id in `kernel-metadata.json` first.
+
+## Why this exists
+
+On **September 29, 2026**, OpenAI introduced
+[GPT-6.1 Sol](https://openai.com/index/introducing-gpt-6-1-sol/), highlighting
+document understanding and professional workflows. That motivates a narrower
+deployment question: does your extractor preserve accuracy when invoice
+conventions change? This package supplies the experiment, not evidence of a
+defect in that model.
+
+## Related benchmarks
 
 Real document-extraction benchmarks exist, and they are more representative of
 production traffic than this corpus:
 
-- **DocILE** (ICDAR 2023, Rossum) has ~6.7k annotated business documents as
+- **[DocILE](https://docile.rossum.ai/)** (ICDAR 2023, Rossum) has ~6.7k annotated business documents as
   PDFs for key information localization and line-item recognition. Large and
   realistic, but the documents are not locale-controlled matched pairs.
-- **DocuBench** (DocuPipe) scores real-world documents with JSON schemas and
+- **[DocuBench](https://www.docupipe.ai/benchmarks/docubench)** (DocuPipe) scores real-world documents with JSON schemas and
   hand-verified labels on macro-average field accuracy.
-- **Omni Extract Bench** (Datalab) is an extraction benchmark toolkit with
+- **[Omni Extract Bench](https://github.com/datalab-to/omni_extract_bench)** (Datalab) is an extraction benchmark toolkit with
   provider prediction harnesses and interpretable scoring.
 
 What this package adds is narrower: controlled pairs where only locale
@@ -236,7 +274,7 @@ absolute numbers say nothing about real-world accuracy.
 - Only PNG, only EUR, only the five v0.1 fields, only EN/DE/ES.
 - Amount/date normalization resolves ambiguous separators with documented
   heuristics. Inherently ambiguous inputs are normalized, not repaired.
-- Date-swap detection cannot observe inversions when day ≤ 12 is violated.
+- Date-swap detection observes inversions only when `day <= 12` and `day != month`.
 - Confidence comes only from adapters that provide it.
 
 ## Development
@@ -244,17 +282,20 @@ absolute numbers say nothing about real-world accuracy.
 ```bash
 make install   # uv sync
 make test      # pytest, network hard-blocked
-make lint      # ruff (E, F, I, UP, RUF; line-length 100)
+make lint      # Ruff: src, tests, and Kaggle scripts; line-length 100
 make build
 make demo      # strict demo must exit 1, relaxed must exit 0
 ```
 
+Without Make: `uv sync`, `uv run ruff check src tests kaggle-kernel`,
+`uv run pytest -q -m "not live"`, and `uv build`.
+
 CI (`.github/workflows/test.yml`) runs Ruff and offline pytest on Python
-3.10-3.13, asserts the relaxed demo exits 0, builds the wheel, and smoke-tests
+3.10-3.13, asserts strict exit 1 and relaxed exit 0, builds the wheel, and smoke-tests
 it in a clean venv. Publishing (`.github/workflows/publish.yml`) uses `uv build`
 and `uv publish` via Trusted Publishing on `release: published`. No tokens are
 stored.
 
 ## License
 
-[Apache-2.0](LICENSE)
+[Apache-2.0](LICENSE) · [Logos and social preview](docs/assets/README.md)

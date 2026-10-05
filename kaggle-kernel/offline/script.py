@@ -1,6 +1,6 @@
 """Offline demo of locale-invoice-check on a Kaggle CPU kernel.
 
-Installs locale-invoice-check==0.1.0 from PyPI, generates synthetic matched
+Installs locale-invoice-check==0.1.2 from PyPI, generates synthetic matched
 EN/DE/ES invoice triplets locally, and runs the fully offline regex-baseline
 demo. No network is needed after the pip install; no credentials are used.
 

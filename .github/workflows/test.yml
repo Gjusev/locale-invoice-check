@@ -17,11 +17,18 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: uv sync
-      - run: uv run ruff check src tests
+      - run: uv run ruff check src tests kaggle-kernel
       # Fully offline: no live network tests exist; markers kept for future opt-in.
       - run: uv run pytest -q -m "not live"
-      # The strict demo exits 1 by design (seeded regex parser bug on DE/ES).
-      # CI asserts the relaxed demo terminates with 0.
+      - name: Demo must exit exactly 1 under strict gates
+        run: |
+          status=0
+          uv run locale-check demo --count 8 --seed 42 || status=$?
+          if [ "$status" -ne 1 ]; then
+            echo "Expected gate failure (exit 1), got $status"
+            exit 1
+          fi
+      # Relaxed thresholds let the deliberately failing baseline complete.
       - run: uv run locale-check demo --count 8 --seed 42 --min-field-accuracy 0 --max-locale-delta 1 --max-money-error-rate 1
 
   wheel-install:
