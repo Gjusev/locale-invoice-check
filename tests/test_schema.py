@@ -9,6 +9,14 @@ from locale_invoice_check.schema import SCHEMA_VERSION, load_result_schema
 from locale_invoice_check.scoring import evaluate_corpus
 
 
+def test_load_result_schema_is_exported_from_package_root():
+    # Regression guard for the CI wheel-install failure: the public API must
+    # expose load_result_schema without importing the submodule directly.
+    import locale_invoice_check
+
+    assert locale_invoice_check.load_result_schema() == load_result_schema()
+
+
 def test_result_validates_against_bundled_schema(corpus):
     result = evaluate_corpus(corpus, RegexBaselineExtractor(),
                              min_field_accuracy=0.0, max_locale_delta=1.0,
