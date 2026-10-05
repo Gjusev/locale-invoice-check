@@ -25,3 +25,6 @@ review-queue.json
 *.key
 *.pem
 kaggle.json
+
+# /brag render outputs
+brag-output*/

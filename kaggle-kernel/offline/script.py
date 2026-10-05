@@ -20,14 +20,14 @@ from pathlib import Path
 WORK = Path("/kaggle/working")
 WORK.mkdir(parents=True, exist_ok=True)
 
-print("Installing locale-invoice-check==0.1.0 from PyPI ...")
+print("Installing locale-invoice-check==0.1.1 from PyPI ...")
 subprocess.run(
-    [sys.executable, "-m", "pip", "install", "-q", "locale-invoice-check==0.1.0"],
+    [sys.executable, "-m", "pip", "install", "-q", "locale-invoice-check==0.1.1"],
     check=True,
 )
 
 command = [
-    "locale-check", "demo",
+    sys.executable, "-m", "locale_invoice_check", "demo",
     "--count", "30",
     "--seed", "42",
     # Relaxed gates for demonstration only -- not recommended production values.
